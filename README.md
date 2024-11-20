@@ -1,2 +1,15 @@
-# taxi-app
-This repository contains the implementation of a technical test for a Fullstack Developer position. The application simulates a concept where users can request private car rides from point A to point B.
+# Ride Request Application  
+
+This project is a solution for a technical test aimed at a Fullstack Developer position. The application simulates a ride request platform, allowing users to request private car rides and manage their ride history.  
+
+## Features  
+- **Driver and Fare Selection:** Users can choose a driver and fare from available options.  
+- **Ride Confirmation:** Confirm the selected ride and receive a booking.  
+- **Ride History:** View a list of all completed rides.  
+
+## Purpose  
+The goal of this project is to demonstrate proficiency in building scalable and maintainable fullstack applications, focusing on clean architecture and seamless user experience.  
+
+## Technologies Used  
+- **Frontend:** React  
+- **Backend:** Node.js and Typescript  
