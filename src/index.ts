@@ -1,13 +1,11 @@
-import express, { Request, Response } from "express";
+import express from "express";
+import rideEstimate from "./ride/estimate";
 
 const app = express();
 const PORT = process.env.PORT || 8080;
 
 app.use(express.json());
-
-app.get("/", (req: Request, res: Response) => {
-  res.send("Welcome to the Node.js + TypeScript API!");
-});
+app.use("/api", rideEstimate);
 
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
