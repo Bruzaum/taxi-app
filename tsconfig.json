@@ -1,12 +1,15 @@
 {
   "compilerOptions": {
-    "target": "ES6",
+    "target": "es2022",
     "module": "commonjs",
     "outDir": "./dist",
     "rootDir": "./src",
     "strict": true,
     "resolveJsonModule": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "lib": ["esnext", "es2022", "dom"]
   },
   "include": ["src", "/*.ts"],
   "exclude": ["node_modules"]

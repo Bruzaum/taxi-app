@@ -3,6 +3,8 @@ import axios from "axios";
 
 import { sortedDrivers } from "./drivers";
 
+console.log(sortedDrivers);
+
 const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
 
 const router = express.Router();
@@ -90,7 +92,6 @@ const getDistanceAndDuration = async (
   }
 };
 
-// Manipulador da rota
 const getCoordinatesHandler: express.RequestHandler = async (
   req: Request,
   res: Response
@@ -119,7 +120,6 @@ const getCoordinatesHandler: express.RequestHandler = async (
     const originCoordinates = await getCoordinates(origin);
     const destinationCoordinates = await getCoordinates(destination);
 
-    // Verificar se as coordenadas são válidas
     if (!originCoordinates || !destinationCoordinates) {
       res.status(500).send("Unable to geocode the addresses.");
       return;
@@ -131,15 +131,18 @@ const getCoordinatesHandler: express.RequestHandler = async (
       destinationCoordinates
     );
 
-    // Retornar as coordenadas, distância e duração
+    // Obter os drivers ordenados
+    const options = await sortedDrivers(); // Resolva a Promise aqui
+
     res.json({
       origin: originCoordinates,
       destination: destinationCoordinates,
-      distance, // Distância em quilômetros
-      duration, // Duração formatada em "minutos e segundos"
-      options: sortedDrivers,
+      distance,
+      duration,
+      options, // Inclua os drivers na resposta
     });
   } catch (error) {
+    console.error(error);
     res.status(500).send("Error retrieving distance and duration");
   }
 };

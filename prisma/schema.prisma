@@ -1,0 +1,70 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url = env("DATABASE_URL")
+}
+
+model Customer {
+  id        Int     @id @default(autoincrement())
+  name      String
+
+  RideLog   RideLog[]
+
+  @@map("customers")
+}
+
+model Driver {
+  id              Int     @id @default(autoincrement())
+  name            String
+  description     String
+  vehicle         String
+  review_rating   Int
+  review_comment  String
+  value           Float
+  km_min          Int
+
+  RideLog         RideLog[] 
+
+  @@map("drivers")
+}
+
+model RideRequest {
+  id                  Int     @id @default(autoincrement())
+  customer_id         Int
+  originLat           String
+  originLng           String
+  originAdress        String
+  destinationLat      String
+  destinationLng      String
+  destinationAdress   String
+  distance            Float
+  duration            String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("rideRequests")
+}
+
+model RideLog {
+  id                  Int     @id @default(autoincrement())
+  customer_id         Int
+  customer            Customer @relation(fields: [customer_id], references: [id])
+  originLat           String
+  originLng           String
+  originAdress        String
+  destinationLat      String
+  destinationLng      String
+  destinationAdress   String
+  distance            Float
+  duration            String
+  driver              Driver @relation(fields: [driverId], references: [id])
+  driverId            Int
+  value               Float
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  @@map("RideLogs")
+}
