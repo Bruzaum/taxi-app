@@ -1,5 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
+exports.sortedDrivers = void 0;
 const express_1 = require("express");
 const router = (0, express_1.Router)();
 const drivers = [
@@ -40,9 +41,10 @@ const drivers = [
         km_min: 10,
     },
 ];
+exports.sortedDrivers = drivers.sort((a, b) => a.value - b.value);
 // Get all drivers
-router.get("/ride/drivers", (req, res) => {
-    const sortedDrivers = drivers.sort((a, b) => a.value - b.value);
-    res.json(sortedDrivers);
-});
-exports.default = router;
+// router.get("/ride/drivers", (req: Request, res: Response) => {
+//   const sortedDrivers = drivers.sort((a, b) => a.value - b.value);
+//   res.json(sortedDrivers);
+// });
+// export default router;

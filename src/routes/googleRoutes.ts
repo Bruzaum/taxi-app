@@ -1,6 +1,8 @@
 import express, { Request, Response } from "express";
 import axios from "axios";
 
+import { sortedDrivers } from "./drivers";
+
 const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
 
 const router = express.Router();
@@ -93,10 +95,22 @@ const getCoordinatesHandler: express.RequestHandler = async (
   req: Request,
   res: Response
 ): Promise<void> => {
-  const { origin, destination } = req.body;
+  const { customer_id, origin, destination } = req.body;
 
-  if (!origin || !destination) {
-    res.status(400).send("INVALID_DATA");
+  if (!customer_id || !origin || !destination) {
+    res.status(400).send({
+      error_code: "INVALID_DATA",
+      error_description: "Todos os campos não foram preenchidos",
+    });
+    return;
+  }
+
+  if (origin == destination) {
+    res.status(400).send({
+      error_code: "INVALID_DATA",
+      error_description:
+        "O endereço de origem não pode ser igual ao de destino",
+    });
     return;
   }
 
@@ -123,6 +137,7 @@ const getCoordinatesHandler: express.RequestHandler = async (
       destination: destinationCoordinates,
       distance, // Distância em quilômetros
       duration, // Duração formatada em "minutos e segundos"
+      options: sortedDrivers,
     });
   } catch (error) {
     res.status(500).send("Error retrieving distance and duration");
@@ -130,6 +145,6 @@ const getCoordinatesHandler: express.RequestHandler = async (
 };
 
 // Usando o getCoordinatesHandler como manipulador da rota
-router.post("/get-coordinates", getCoordinatesHandler);
+router.post("/ride/estimate", getCoordinatesHandler);
 
 export default router;

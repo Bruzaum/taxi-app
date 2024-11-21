@@ -14,8 +14,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = __importDefault(require("express"));
 const axios_1 = __importDefault(require("axios"));
-const dotenv_1 = __importDefault(require("dotenv"));
-dotenv_1.default.config();
+const drivers_1 = require("./drivers");
 const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
 const router = express_1.default.Router();
 // Função para obter as coordenadas de um endereço
@@ -23,10 +22,8 @@ const getCoordinates = (address) => __awaiter(void 0, void 0, void 0, function* 
     var _a, _b;
     const encodedAddress = encodeURIComponent(address);
     const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${API_KEY}`;
-    console.log(`Making request to Geocode API: ${url}`);
     try {
         const response = yield axios_1.default.get(url);
-        console.log("Geocode API response:", response.data);
         if (response.data.status === "OK") {
             const location = (_b = (_a = response.data.results[0]) === null || _a === void 0 ? void 0 : _a.geometry) === null || _b === void 0 ? void 0 : _b.location;
             return {
@@ -35,23 +32,18 @@ const getCoordinates = (address) => __awaiter(void 0, void 0, void 0, function* 
             };
         }
         else {
-            console.error("Geocode API error: ", response.data.status);
             throw new Error("Unable to geocode address");
         }
     }
     catch (error) {
-        console.error("Error fetching coordinates: ", error);
         throw new Error("Error fetching coordinates");
     }
 });
 // Função para calcular a distância e duração entre dois pontos usando a API de Distance Matrix
-// Função para calcular a distância e duração entre dois pontos usando a API de Distance Matrix
 const getDistanceAndDuration = (origin, destination) => __awaiter(void 0, void 0, void 0, function* () {
     const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${API_KEY}`;
-    console.log(`Making request to Distance Matrix API: ${url}`);
     try {
         const response = yield axios_1.default.get(url);
-        console.log("Distance Matrix API response:", response.data);
         if (response.data.status === "OK") {
             const element = response.data.rows[0].elements[0];
             // Converter distância para quilômetros
@@ -61,25 +53,33 @@ const getDistanceAndDuration = (origin, destination) => __awaiter(void 0, void 0
             const durationInSeconds = element.duration.value % 60; // Segundos restantes
             const durationFormatted = `${durationInMinutes}min${durationInSeconds}s`;
             return {
-                distance: `${distanceInKm} km`,
+                distance: distanceInKm,
                 duration: durationFormatted,
             };
         }
         else {
-            console.error("Distance Matrix API error: ", response.data.status);
             throw new Error("Unable to calculate distance or duration");
         }
     }
     catch (error) {
-        console.error("Error fetching distance and duration: ", error);
         throw new Error("Error fetching distance and duration");
     }
 });
 // Manipulador da rota
 const getCoordinatesHandler = (req, res) => __awaiter(void 0, void 0, void 0, function* () {
-    const { origin, destination } = req.body;
-    if (!origin || !destination) {
-        res.status(400).send("Both origin and destination are required.");
+    const { customer_id, origin, destination } = req.body;
+    if (!customer_id || !origin || !destination) {
+        res.status(400).send({
+            error_code: "INVALID_DATA",
+            message: "Todos os campos não foram preenchidos",
+        });
+        return;
+    }
+    if (origin == destination) {
+        res.status(400).send({
+            error_code: "INVALID_DATA",
+            message: "O endereço de origem não pode ser igual ao de destino",
+        });
         return;
     }
     try {
@@ -97,15 +97,15 @@ const getCoordinatesHandler = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.json({
             origin: originCoordinates,
             destination: destinationCoordinates,
-            distance, // Distância formatada em quilômetros
+            distance, // Distância em quilômetros
             duration, // Duração formatada em "minutos e segundos"
+            options: drivers_1.sortedDrivers,
         });
     }
     catch (error) {
-        console.error("Error in route handler:", error);
         res.status(500).send("Error retrieving distance and duration");
     }
 });
 // Usando o getCoordinatesHandler como manipulador da rota
-router.post("/get-coordinates", getCoordinatesHandler);
+router.post("/ride/estimate", getCoordinatesHandler);
 exports.default = router;
