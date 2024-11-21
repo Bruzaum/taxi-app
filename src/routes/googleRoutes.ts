@@ -1,8 +1,5 @@
 import express, { Request, Response } from "express";
 import axios from "axios";
-import dotenv from "dotenv";
-
-dotenv.config();
 
 const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
 
@@ -26,10 +23,10 @@ interface DistanceMatrixResponse {
   rows: Array<{
     elements: Array<{
       distance: {
-        value: number; // Distância em metros
+        value: number;
       };
       duration: {
-        value: number; // Duração em segundos
+        value: number;
       };
     }>;
   }>;
@@ -41,55 +38,52 @@ const getCoordinates = async (address: string) => {
   const encodedAddress = encodeURIComponent(address);
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${API_KEY}`;
 
-  console.log(`Making request to Geocode API: ${url}`);
-
   try {
     const response = await axios.get<GeocodeResponse>(url);
-
-    console.log("Geocode API response:", response.data);
 
     if (response.data.status === "OK") {
       const location = response.data.results[0]?.geometry?.location;
       return {
-        lat: location?.lat,
-        lng: location?.lng,
+        latitude: location?.lat,
+        longitude: location?.lng,
       };
     } else {
-      console.error("Geocode API error: ", response.data.status);
       throw new Error("Unable to geocode address");
     }
   } catch (error) {
-    console.error("Error fetching coordinates: ", error);
     throw new Error("Error fetching coordinates");
   }
 };
 
 // Função para calcular a distância e duração entre dois pontos usando a API de Distance Matrix
 const getDistanceAndDuration = async (
-  origin: { lat: number; lng: number },
-  destination: { lat: number; lng: number }
+  origin: { latitude: number; longitude: number },
+  destination: { latitude: number; longitude: number }
 ) => {
-  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.lat},${origin.lng}&destinations=${destination.lat},${destination.lng}&key=${API_KEY}`;
-
-  console.log(`Making request to Distance Matrix API: ${url}`);
+  const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${API_KEY}`;
 
   try {
     const response = await axios.get<DistanceMatrixResponse>(url);
 
-    console.log("Distance Matrix API response:", response.data);
-
     if (response.data.status === "OK") {
       const element = response.data.rows[0].elements[0];
+
+      // Converter distância para quilômetros
+      const distanceInKm = (element.distance.value / 1000).toFixed(2); // Formatar para 2 casas decimais
+
+      // Converter duração para o formato "10min33s"
+      const durationInMinutes = Math.floor(element.duration.value / 60); // Minutos inteiros
+      const durationInSeconds = element.duration.value % 60; // Segundos restantes
+      const durationFormatted = `${durationInMinutes}min${durationInSeconds}s`;
+
       return {
-        distance: element.distance.value, // Distância em metros
-        duration: element.duration.value, // Duração em segundos
+        distance: distanceInKm,
+        duration: durationFormatted,
       };
     } else {
-      console.error("Distance Matrix API error: ", response.data.status);
       throw new Error("Unable to calculate distance or duration");
     }
   } catch (error) {
-    console.error("Error fetching distance and duration: ", error);
     throw new Error("Error fetching distance and duration");
   }
 };
@@ -102,7 +96,7 @@ const getCoordinatesHandler: express.RequestHandler = async (
   const { origin, destination } = req.body;
 
   if (!origin || !destination) {
-    res.status(400).send("Both origin and destination are required.");
+    res.status(400).send("INVALID_DATA");
     return;
   }
 
@@ -127,11 +121,10 @@ const getCoordinatesHandler: express.RequestHandler = async (
     res.json({
       origin: originCoordinates,
       destination: destinationCoordinates,
-      distance: distance, // Distância em metros
-      duration: duration, // Duração em segundos
+      distance, // Distância em quilômetros
+      duration, // Duração formatada em "minutos e segundos"
     });
   } catch (error) {
-    console.error("Error in route handler:", error);
     res.status(500).send("Error retrieving distance and duration");
   }
 };

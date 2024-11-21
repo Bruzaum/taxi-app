@@ -30,8 +30,8 @@ const getCoordinates = (address) => __awaiter(void 0, void 0, void 0, function* 
         if (response.data.status === "OK") {
             const location = (_b = (_a = response.data.results[0]) === null || _a === void 0 ? void 0 : _a.geometry) === null || _b === void 0 ? void 0 : _b.location;
             return {
-                lat: location === null || location === void 0 ? void 0 : location.lat,
-                lng: location === null || location === void 0 ? void 0 : location.lng,
+                latitude: location === null || location === void 0 ? void 0 : location.lat,
+                longitude: location === null || location === void 0 ? void 0 : location.lng,
             };
         }
         else {
@@ -45,17 +45,24 @@ const getCoordinates = (address) => __awaiter(void 0, void 0, void 0, function* 
     }
 });
 // Função para calcular a distância e duração entre dois pontos usando a API de Distance Matrix
+// Função para calcular a distância e duração entre dois pontos usando a API de Distance Matrix
 const getDistanceAndDuration = (origin, destination) => __awaiter(void 0, void 0, void 0, function* () {
-    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.lat},${origin.lng}&destinations=${destination.lat},${destination.lng}&key=${API_KEY}`;
+    const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${API_KEY}`;
     console.log(`Making request to Distance Matrix API: ${url}`);
     try {
         const response = yield axios_1.default.get(url);
         console.log("Distance Matrix API response:", response.data);
         if (response.data.status === "OK") {
             const element = response.data.rows[0].elements[0];
+            // Converter distância para quilômetros
+            const distanceInKm = (element.distance.value / 1000).toFixed(2); // Formatar para 2 casas decimais
+            // Converter duração para o formato "10min33s"
+            const durationInMinutes = Math.floor(element.duration.value / 60); // Minutos inteiros
+            const durationInSeconds = element.duration.value % 60; // Segundos restantes
+            const durationFormatted = `${durationInMinutes}min${durationInSeconds}s`;
             return {
-                distance: element.distance.value, // Distância em metros
-                duration: element.duration.value, // Duração em segundos
+                distance: `${distanceInKm} km`,
+                duration: durationFormatted,
             };
         }
         else {
@@ -90,8 +97,8 @@ const getCoordinatesHandler = (req, res) => __awaiter(void 0, void 0, void 0, fu
         res.json({
             origin: originCoordinates,
             destination: destinationCoordinates,
-            distance: distance, // Distância em metros
-            duration: duration, // Duração em segundos
+            distance, // Distância formatada em quilômetros
+            duration, // Duração formatada em "minutos e segundos"
         });
     }
     catch (error) {

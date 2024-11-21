@@ -42,6 +42,7 @@ const drivers = [
 ];
 // Get all drivers
 router.get("/ride/drivers", (req, res) => {
-    res.json(drivers);
+    const sortedDrivers = drivers.sort((a, b) => a.value - b.value);
+    res.json(sortedDrivers);
 });
 exports.default = router;
