@@ -4,10 +4,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const router = express.Router();
 
-/**
- * PATCH /ride/confirmation
- * Insere uma nova entrada na tabela RideLog com base nos dados do último registro da tabela RideRequest.
- */
 router.patch(
   "/ride/confirmation",
   async (_req: Request, res: Response): Promise<void> => {
@@ -84,8 +80,8 @@ router.patch(
           destinationAdress: lastRideRequest.destinationAdress,
           distance: lastRideRequest.distance,
           duration: lastRideRequest.duration,
-          value: valueInput, // Valor fixo como exemplo; ajuste conforme necessário
-          driverId: driver.id, // Driver ID fixo para teste
+          value: valueInput,
+          driverId: driver.id,
         },
       });
 

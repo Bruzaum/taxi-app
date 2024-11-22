@@ -4,10 +4,6 @@ import { PrismaClient } from "@prisma/client";
 const prisma = new PrismaClient();
 const router = express.Router();
 
-/**
- * GET /ride/:customer_id
- * Retorna todas as corridas (RideLog) associadas a um customer_id e driver_id fornecidos.
- */
 router.get(
   "/ride/:customer_id",
   async (req: Request, res: Response): Promise<void> => {
