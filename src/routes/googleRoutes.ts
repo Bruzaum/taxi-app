@@ -1,13 +1,12 @@
 import express, { Request, Response } from "express";
 import axios from "axios";
-
+import { PrismaClient } from "@prisma/client";
 import { sortedDrivers } from "./drivers";
 
-console.log(sortedDrivers);
+const prisma = new PrismaClient();
+const router = express.Router();
 
 const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
-
-const router = express.Router();
 
 // Tipos de resposta para Geocode
 interface GeocodeResponse {
@@ -43,6 +42,7 @@ const getCoordinates = async (address: string) => {
   const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${API_KEY}`;
 
   try {
+    // Adicionando tipagem explícita ao axios para garantir que response tenha o tipo esperado
     const response = await axios.get<GeocodeResponse>(url);
 
     if (response.data.status === "OK") {
@@ -67,6 +67,7 @@ const getDistanceAndDuration = async (
   const url = `https://maps.googleapis.com/maps/api/distancematrix/json?origins=${origin.latitude},${origin.longitude}&destinations=${destination.latitude},${destination.longitude}&key=${API_KEY}`;
 
   try {
+    // Tipagem explícita para a resposta da API
     const response = await axios.get<DistanceMatrixResponse>(url);
 
     if (response.data.status === "OK") {
@@ -81,7 +82,7 @@ const getDistanceAndDuration = async (
       const durationFormatted = `${durationInMinutes}min${durationInSeconds}s`;
 
       return {
-        distance: distanceInKm,
+        distance: parseFloat(distanceInKm),
         duration: durationFormatted,
       };
     } else {
@@ -92,6 +93,7 @@ const getDistanceAndDuration = async (
   }
 };
 
+// Função para lidar com a requisição
 const getCoordinatesHandler: express.RequestHandler = async (
   req: Request,
   res: Response
@@ -101,7 +103,7 @@ const getCoordinatesHandler: express.RequestHandler = async (
   if (!customer_id || !origin || !destination) {
     res.status(400).send({
       error_code: "INVALID_DATA",
-      error_description: "Todos os campos não foram preenchidos",
+      error_description: "Todos os campos obrigatórios não foram preenchidos.",
     });
     return;
   }
@@ -110,13 +112,13 @@ const getCoordinatesHandler: express.RequestHandler = async (
     res.status(400).send({
       error_code: "INVALID_DATA",
       error_description:
-        "O endereço de origem não pode ser igual ao de destino",
+        "O endereço de origem não pode ser igual ao de destino.",
     });
     return;
   }
 
   try {
-    // Geocodificar os endereços para coordenadas
+    // Obter as coordenadas dos endereços
     const originCoordinates = await getCoordinates(origin);
     const destinationCoordinates = await getCoordinates(destination);
 
@@ -125,25 +127,40 @@ const getCoordinatesHandler: express.RequestHandler = async (
       return;
     }
 
-    // Calcular a distância e a duração
+    // Calcular a distância e duração
     const { distance, duration } = await getDistanceAndDuration(
       originCoordinates,
       destinationCoordinates
     );
 
-    // Obter os drivers ordenados
-    const options = await sortedDrivers(); // Resolva a Promise aqui
+    // Obter os motoristas ordenados
+    const drivers = await sortedDrivers(); // Resolva a Promise aqui
+
+    // Criar o log da viagem (solicitação de viagem)
+    const newRideRequest = await prisma.rideRequest.create({
+      data: {
+        customer_id: parseInt(customer_id), // Convertendo o customer_id para número
+        originLat: originCoordinates.latitude.toString(),
+        originLng: originCoordinates.longitude.toString(),
+        originAdress: origin,
+        destinationLat: destinationCoordinates.latitude.toString(),
+        destinationLng: destinationCoordinates.longitude.toString(),
+        destinationAdress: destination,
+        distance, // Distância calculada
+        duration, // Duração calculada
+        // options: {
+        //   connect: drivers.map((driver) => ({ id: driver.id })), // Associando os motoristas disponíveis à solicitação
+        // },
+      },
+    });
 
     res.json({
-      origin: originCoordinates,
-      destination: destinationCoordinates,
-      distance,
-      duration,
-      options, // Inclua os drivers na resposta
+      message: "Ride request created successfully.",
+      rideRequest: newRideRequest,
     });
   } catch (error) {
-    console.error(error);
-    res.status(500).send("Error retrieving distance and duration");
+    console.error("Error creating ride request:", error);
+    res.status(500).send("Error creating ride request.");
   }
 };
 

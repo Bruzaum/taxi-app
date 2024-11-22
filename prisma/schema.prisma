@@ -29,6 +29,7 @@ model Driver {
   RideLog         RideLog[] 
 
   @@map("drivers")
+  RideRequest RideRequest[]
 }
 
 model RideRequest {
@@ -40,6 +41,7 @@ model RideRequest {
   destinationLat      String
   destinationLng      String
   destinationAdress   String
+  options             Driver[]
   distance            Float
   duration            String
   createdAt           DateTime @default(now())
