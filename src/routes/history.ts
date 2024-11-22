@@ -69,6 +69,9 @@ router.get(
           value: true,
           createdAt: true,
         },
+        orderBy: {
+          id: "desc",
+        },
       });
 
       // Retorno vazio caso não existam corridas

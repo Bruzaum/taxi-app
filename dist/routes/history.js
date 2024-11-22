@@ -7,10 +7,6 @@ const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const router = express_1.default.Router();
-/**
- * GET /ride/:customer_id
- * Retorna todas as corridas (RideLog) associadas a um customer_id e driver_id fornecidos.
- */
 router.get("/ride/:customer_id", async (req, res) => {
     const { customer_id } = req.params;
     const { driver_id } = req.query;
@@ -65,6 +61,9 @@ router.get("/ride/:customer_id", async (req, res) => {
                 duration: true,
                 value: true,
                 createdAt: true,
+            },
+            orderBy: {
+                id: "desc",
             },
         });
         // Retorno vazio caso não existam corridas
