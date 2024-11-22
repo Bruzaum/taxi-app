@@ -12,4 +12,5 @@ The goal of this project is to demonstrate proficiency in building scalable and 
 
 ## Technologies Used  
 - **Frontend:** React  
-- **Backend:** Node.js and Typescript  
+- **Backend:** Node.js and Typescript
+- **Database:** SQLite and Prisma  
