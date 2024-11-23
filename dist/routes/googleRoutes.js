@@ -7,9 +7,11 @@ const express_1 = __importDefault(require("express"));
 const axios_1 = __importDefault(require("axios"));
 const client_1 = require("@prisma/client");
 const drivers_1 = require("./drivers");
+const dotenv_1 = __importDefault(require("dotenv"));
 const prisma = new client_1.PrismaClient();
 const router = express_1.default.Router();
-const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
+dotenv_1.default.config();
+const API_KEY = process.env.API_KEY;
 // Função para obter as coordenadas de um endereço
 const getCoordinates = async (address) => {
     const encodedAddress = encodeURIComponent(address);

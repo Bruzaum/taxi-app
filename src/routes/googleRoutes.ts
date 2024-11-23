@@ -2,11 +2,14 @@ import express, { Request, Response } from "express";
 import axios from "axios";
 import { PrismaClient } from "@prisma/client";
 import { sortedDrivers } from "./drivers";
+import dotenv from "dotenv";
 
 const prisma = new PrismaClient();
 const router = express.Router();
 
-const API_KEY = "AIzaSyBFsUUBnK9EIob48O54ckEqJ34-6-Q5hls";
+dotenv.config();
+
+const API_KEY = process.env.API_KEY;
 
 // Tipos de resposta para Geocode
 interface GeocodeResponse {
