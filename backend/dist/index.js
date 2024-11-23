@@ -9,6 +9,8 @@ const confirmation_1 = __importDefault(require("./routes/confirmation"));
 const history_1 = __importDefault(require("./routes/history"));
 const app = (0, express_1.default)();
 const PORT = process.env.PORT || 8080;
+var cors = require("cors");
+app.use(cors()); // Use this after the variable declaration
 app.use(express_1.default.json());
 app.use("/", googleRoutes_1.default);
 app.use("/", confirmation_1.default);
