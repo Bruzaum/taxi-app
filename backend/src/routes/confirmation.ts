@@ -43,8 +43,8 @@ router.patch(
         return;
       }
 
-      var driverIdInput = 3;
-      var valueInput = 45.5;
+      var driverIdInput = 1;
+      //var valueInput = 45.5;
 
       const driver = await prisma.driver.findUnique({
         where: { id: driverIdInput },
@@ -60,7 +60,7 @@ router.patch(
       }
 
       // Motorista não encontrado
-      if (valueInput < driver.km_min) {
+      if (lastRideRequest.distance * driver.value < driver.km_min) {
         res.status(406).json({
           error_code: "INVALID_DISTANCE",
           error_description: "Quilometragem inválida para o motorista",
@@ -80,7 +80,7 @@ router.patch(
           destinationAdress: lastRideRequest.destinationAdress,
           distance: lastRideRequest.distance,
           duration: lastRideRequest.duration,
-          value: valueInput,
+          value: lastRideRequest.distance * driver.value,
           driverId: driver.id,
         },
       });
