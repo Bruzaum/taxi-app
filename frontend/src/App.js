@@ -1,34 +1,29 @@
 import React, { useEffect } from "react";
-import logo from "./logo.svg";
 import "./App.css";
+import CreateForm from "./components/FormEstimate/index.js";
+import ConfirmButton from "./components/ConfirmButton/index.js";
+import Map from "./components/Map/index.js";
+import Card from "./components/Card/index.js";
 
 import api from "./Api.js";
 //import axios from "axios";
 
 function App() {
   useEffect(() => {
-    api.get("/ride/3?driver_id=3").then((res) => {
+    api.get("/ride/3?driver_id=1").then((res) => {
       console.log(res.data);
       return;
     });
   }, []);
 
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div>
+      <CreateForm />
+      <ConfirmButton />
+      <React.StrictMode>
+        <Map />
+      </React.StrictMode>
+      <Card />
     </div>
   );
 }
