@@ -6,8 +6,19 @@ const router = express.Router();
 
 router.patch(
   "/ride/confirmation",
-  async (_req: Request, res: Response): Promise<void> => {
+  async (req: Request, res: Response): Promise<void> => {
     try {
+      const { driver_id, value } = req.body;
+
+      // Validação de entrada
+      if (!driver_id || !value) {
+        res.status(400).json({
+          error_code: "INVALID_REQUEST",
+          error_description: "driver_id e value são obrigatórios",
+        });
+        return;
+      }
+
       // Recupera o último registro na tabela RideRequest
       const lastRideRequest = await prisma.rideRequest.findFirst({
         orderBy: {
@@ -15,7 +26,6 @@ router.patch(
         },
       });
 
-      // Verifica se há um registro encontrado
       if (!lastRideRequest) {
         res.status(400).json({
           error_code: "INVALID_DATA",
@@ -24,7 +34,6 @@ router.patch(
         return;
       }
 
-      // Verifica se existe o id do usuário
       if (!lastRideRequest.customer_id) {
         res.status(400).json({
           error_code: "INVALID_DATA",
@@ -33,8 +42,7 @@ router.patch(
         return;
       }
 
-      // Origem e Destino nao podem ser iguais
-      if (lastRideRequest.originAdress == lastRideRequest.destinationAdress) {
+      if (lastRideRequest.originAdress === lastRideRequest.destinationAdress) {
         res.status(400).json({
           error_code: "INVALID_DATA",
           error_description:
@@ -43,24 +51,21 @@ router.patch(
         return;
       }
 
-      var driverIdInput = 1;
-      //var valueInput = 45.5;
-
+      // Busca o motorista pelo ID fornecido
       const driver = await prisma.driver.findUnique({
-        where: { id: driverIdInput },
+        where: { id: driver_id },
       });
 
-      // Motorista não encontrado
       if (!driver) {
         res.status(404).json({
           error_code: "DRIVER_NOT_FOUND",
-          error_description: `Nenhum Driver encontrado com o ID ${driverIdInput}.`,
+          error_description: `Nenhum Driver encontrado com o ID ${driver_id}.`,
         });
         return;
       }
 
-      // Motorista não encontrado
-      if (lastRideRequest.distance * driver.value < driver.km_min) {
+      // Verifica a quilometragem mínima
+      if (lastRideRequest.distance * value < driver.km_min) {
         res.status(406).json({
           error_code: "INVALID_DISTANCE",
           error_description: "Quilometragem inválida para o motorista",
@@ -68,7 +73,7 @@ router.patch(
         return;
       }
 
-      // Cria o registro na tabela RideLog com os dados recuperados
+      // Cria o registro na tabela RideLog
       const newRideLog = await prisma.rideLog.create({
         data: {
           customer_id: lastRideRequest.customer_id,
@@ -80,12 +85,11 @@ router.patch(
           destinationAdress: lastRideRequest.destinationAdress,
           distance: lastRideRequest.distance,
           duration: lastRideRequest.duration,
-          value: lastRideRequest.distance * driver.value,
+          value: lastRideRequest.distance * value,
           driverId: driver.id,
         },
       });
 
-      // Retorna o novo registro
       res.status(200).json({
         success: true,
         rideLog: newRideLog,

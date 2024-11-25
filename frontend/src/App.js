@@ -1,39 +1,31 @@
-import React, { useEffect } from "react";
+import React, { useState } from "react";
 import "./App.css";
+import { DistanceProvider } from "./DistanceContext";
 import CreateForm from "./components/FormEstimate/index.js";
-import ConfirmButton from "./components/ConfirmButton/index.js";
-import Map from "./components/Map/index.js";
 import Card from "./components/Card/index.js";
-import DataGridDemo from "./components/DataGrid/index.js";
-
-import api from "./Api.js";
+import FormSearch from "./components/FormSearch/index.js";
 import Footer from "./components/Footer/index.js";
-//import axios from "axios";
 
 function App() {
-  useEffect(() => {
-    api.get("/ride/3?driver_id=1").then((res) => {
-      console.log(res.data);
-      return;
-    });
-  }, []);
+  // eslint-disable-next-line
+  const [routeData, setRouteData] = useState({ origin: "", destination: "" });
+
+  const handleRouteUpdate = (origin, destination) => {
+    setRouteData({ origin, destination });
+  };
 
   return (
     <div className="flex flex-col justify-center items-center space-y-4">
-      <div className="p-3 mt-5">
-        <CreateForm />
-      </div>
-      <React.StrictMode>
-        <Map />
-      </React.StrictMode>
-      <ConfirmButton />
+      <DistanceProvider>
+        <div className="p-3 mt-5">
+          <CreateForm onRouteUpdate={handleRouteUpdate} />
+        </div>
 
-      <div className="flex flex-row space-x-4">
-        <Card />
-        <Card />
-        <Card />
-      </div>
-      <DataGridDemo />
+        <div className="flex flex-row">
+          <Card />
+        </div>
+      </DistanceProvider>
+      <FormSearch />
       <footer className="w-full">
         <Footer />
       </footer>

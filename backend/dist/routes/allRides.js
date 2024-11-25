@@ -7,17 +7,20 @@ const express_1 = __importDefault(require("express"));
 const client_1 = require("@prisma/client");
 const prisma = new client_1.PrismaClient();
 const router = express_1.default.Router();
-router.get("/drivers", async (req, res) => {
+router.get("/ride-logs", async (req, res) => {
     try {
-        const drivers = await prisma.driver.findMany({
-            distinct: ["id"],
+        const rideLogs = await prisma.rideLog.findMany({
+            include: {
+                customer: true,
+                driver: true,
+            },
         });
-        res.json(drivers);
+        res.json(rideLogs);
     }
     catch (error) {
         console.error(error);
-        res.status(500).json({ error: "Erro ao buscar motoristas" });
+        res.status(500).json({ error: "Erro ao buscar logs de corrida" });
     }
 });
 exports.default = router;
-//# sourceMappingURL=drivers.js.map
+//# sourceMappingURL=allRides.js.map
