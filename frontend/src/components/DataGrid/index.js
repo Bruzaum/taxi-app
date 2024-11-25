@@ -20,7 +20,7 @@ const columns = [
 
 export default function RideLogDataGrid({ rideLogs }) {
   return (
-    <Box sx={{ height: 500, width: "85%" }}>
+    <Box sx={{ height: "50vh", width: "75vw" }}>
       <DataGrid
         rows={rideLogs}
         columns={columns}

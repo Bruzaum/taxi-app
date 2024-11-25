@@ -10,7 +10,7 @@ const router = express_1.default.Router();
 router.get("/ride/:customer_id", async (req, res) => {
     const { customer_id } = req.params;
     const { driver_id } = req.query;
-    // Verificar se o customer_id está presente
+    // Validação dos parâmetros
     if (!customer_id) {
         res.status(400).json({
             error_code: "MISSING_CUSTOMER_ID",
@@ -18,36 +18,28 @@ router.get("/ride/:customer_id", async (req, res) => {
         });
         return;
     }
-    // Validação dos parâmetros
     const customerId = parseInt(customer_id, 10);
     const driverId = parseInt(driver_id, 10);
     if (isNaN(customerId) || isNaN(driverId)) {
         res.status(400).json({
             error_code: "INVALID_PARAMETERS",
-            error_description: "Os parâmetros customer_id e driver_id devem ser números válidos.",
-        });
-        return;
-    }
-    const driver = await prisma.driver.findUnique({
-        where: { id: driverId },
-    });
-    // Motorista não encontrado
-    if (!driver) {
-        res.status(404).json({
-            error_code: "INVALID_DRIVER",
-            error_description: "Motorista invalido",
-        });
-        return;
-    }
-    if (isNaN(customerId)) {
-        res.status(400).json({
-            error_code: "NO_CUSTOMER_FOUND",
-            error_description: "O ID do usuário deve ser inserido",
+            error_description: "Os parâmetros 'customer_id' e 'driver_id' devem ser números válidos.",
         });
         return;
     }
     try {
-        // Consulta no banco de dados para encontrar todas as corridas
+        // Verificar se o motorista existe
+        const driver = await prisma.driver.findUnique({
+            where: { id: driverId },
+        });
+        if (!driver) {
+            res.status(404).json({
+                error_code: "INVALID_DRIVER",
+                error_description: "Motorista inválido.",
+            });
+            return;
+        }
+        // Buscar histórico de corridas
         const rides = await prisma.rideLog.findMany({
             where: {
                 customer_id: customerId,
@@ -66,15 +58,14 @@ router.get("/ride/:customer_id", async (req, res) => {
                 id: "desc",
             },
         });
-        // Retorno vazio caso não existam corridas
         if (rides.length === 0) {
             res.status(404).json({
                 error_code: "NO_RIDES_FOUND",
-                error_description: "Nenhum registro encontrado",
+                error_description: "Nenhum registro encontrado.",
             });
             return;
         }
-        // Resposta formatada com os dados do customer_id e do histórico de corridas
+        // Responder com os dados das corridas
         res.status(200).json({
             customer_id: customerId,
             rides,

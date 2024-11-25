@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import Box from "@mui/material/Box";
 import Card from "@mui/material/Card";
 import CardActions from "@mui/material/CardActions";
@@ -8,7 +8,7 @@ import Typography from "@mui/material/Typography";
 import api from "../../Api"; // Certifique-se de ajustar o caminho
 
 function DriverCard({
-  id, // Adicionado para capturar o driver_id
+  id,
   name,
   description,
   vehicle,
@@ -17,6 +17,9 @@ function DriverCard({
   value,
   kmMin,
   distance,
+  isSelected,
+  isDisabled,
+  onSelect,
 }) {
   const rideCost = distance * value;
 
@@ -28,6 +31,7 @@ function DriverCard({
       });
       console.log("Confirmação realizada com sucesso:", response.data);
       alert("Corrida confirmada com sucesso!");
+      onSelect(id); // Notifica o DriverCards sobre a seleção
     } catch (error) {
       console.error("Erro ao confirmar a corrida:", error);
       alert("Erro ao confirmar a corrida. Tente novamente.");
@@ -36,7 +40,13 @@ function DriverCard({
 
   return (
     <Box sx={{ maxWidth: 380, margin: 2 }}>
-      <Card variant="outlined">
+      <Card
+        variant="outlined"
+        sx={{
+          border: isSelected ? "2px solid #00008B" : "1px solid #e0e0e0",
+          boxShadow: isSelected ? "0 0 10px rgba(0, 0, 139, 0.5)" : "none",
+        }}
+      >
         <CardContent sx={{ minHeight: 380 }}>
           <Typography
             gutterBottom
@@ -67,7 +77,12 @@ function DriverCard({
           </Typography>
         </CardContent>
         <CardActions>
-          <Button size="small" onClick={handleSelect}>
+          <Button
+            size="small"
+            onClick={handleSelect}
+            disabled={isDisabled}
+            sx={{ color: isDisabled ? "gray" : "primary.main" }}
+          >
             Selecionar
           </Button>
         </CardActions>
@@ -77,12 +92,21 @@ function DriverCard({
 }
 
 export default function DriverCards({ drivers, distance }) {
+  const [selectedDriverId, setSelectedDriverId] = useState(null);
+
   const uniqueDrivers = Array.from(
     new Map(drivers.map((driver) => [driver.id, driver])).values()
   );
 
   return (
-    <Box sx={{ display: "flex", justifyContent: "space-around" }}>
+    <Box
+      sx={{
+        display: "flex",
+        flexDirection: { xs: "column", lg: "row" },
+        justifyContent: { xs: "center", lg: "space-around" },
+        gap: { xs: 2, lg: 0 },
+      }}
+    >
       {uniqueDrivers.map((driver) => (
         <DriverCard
           key={driver.id}
@@ -95,6 +119,11 @@ export default function DriverCards({ drivers, distance }) {
           value={driver.value}
           kmMin={driver.km_min}
           distance={distance}
+          isSelected={selectedDriverId === driver.id}
+          isDisabled={
+            selectedDriverId !== null && selectedDriverId !== driver.id
+          }
+          onSelect={(id) => setSelectedDriverId(id)}
         />
       ))}
     </Box>

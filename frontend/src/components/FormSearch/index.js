@@ -6,36 +6,20 @@ import RideLogDataGrid from "../DataGrid/index.js";
 export default function FormSearch() {
   const { register, handleSubmit } = useForm();
   const [rideLogs, setRideLogs] = useState([]);
-  const [driverName, setDriverName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   async function handleRequest(data) {
     const { customer_id, driver_id } = data;
 
-    // Inicia o estado de carregamento
-    setIsLoading(true);
+    setIsLoading(true); // Inicia o estado de carregamento
 
     try {
       // Faz a requisição para obter todos os motoristas
       const driversResponse = await api.get(`/drivers`);
-
-      if (driversResponse.data) {
-        // Filtra o motorista pelo driver_id
-        const driver = parseInt(driver_id) - 1;
-
-        if (driver) {
-          // Atualiza o nome do motorista
-          setDriverName(driversResponse.data[driver].name);
-        } else {
-          console.error("Motorista não encontrado");
-          setDriverName("Desconhecido");
-        }
-      } else {
-        console.error("Erro ao buscar motoristas", driversResponse.data);
-        setDriverName("Desconhecido");
-      }
-
-      console.log(driverName);
+      const driver = driversResponse.data.find(
+        (driver) => driver.id === parseInt(driver_id)
+      );
+      const driverName = driver ? driver.name : "Desconhecido";
 
       // Faz a requisição para buscar os dados das corridas
       const response = await api.get(
@@ -55,8 +39,7 @@ export default function FormSearch() {
           createdAt: new Date(log.createdAt).toLocaleDateString(),
         }));
 
-        // Atualiza os logs para exibição
-        setRideLogs(logs);
+        setRideLogs(logs); // Atualiza os logs
       } else {
         console.error(
           "A resposta não contém a chave 'rides' ou não é um array.",
@@ -65,10 +48,21 @@ export default function FormSearch() {
         setRideLogs([]); // Limpa os dados em caso de resposta inesperada
       }
     } catch (error) {
-      console.error("Erro ao buscar dados de corridas:", error);
+      // Exibe mais detalhes sobre o erro
+      if (error.response) {
+        console.error(
+          `Erro na API (status ${error.response.status}):`,
+          error.response.data
+        );
+      } else if (error.request) {
+        console.error("Nenhuma resposta recebida da API:", error.request);
+      } else {
+        console.error("Erro na configuração da requisição:", error.message);
+      }
+
       setRideLogs([]); // Limpa os dados em caso de erro
     } finally {
-      setIsLoading(false);
+      setIsLoading(false); // Finaliza o estado de carregamento
     }
   }
 
@@ -76,7 +70,7 @@ export default function FormSearch() {
     <div className="flex flex-col items-center">
       <form
         onSubmit={handleSubmit(handleRequest)}
-        className="flex flex-row space-x-4 w-auto p-4 bg-gray-100 rounded shadow"
+        className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0 w-auto p-4 bg-gray-100 rounded shadow"
       >
         <input
           placeholder="ID do usuário"

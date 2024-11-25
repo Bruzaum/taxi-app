@@ -36,7 +36,7 @@ export default function FormEstimate() {
     <div className="flex flex-col items-center">
       <form
         onSubmit={handleSubmit(handleRequest)}
-        className="flex flex-row space-x-4 w-auto p-4 bg-gray-100 rounded shadow"
+        className="flex flex-col space-y-4 lg:flex-row lg:space-x-4 lg:space-y-0 w-auto p-4 bg-gray-100 rounded shadow"
       >
         <input
           placeholder="ID do usuário"
