@@ -15,14 +15,6 @@ The goal of this project is to demonstrate proficiency in building scalable and 
 - **Backend:** Node.js and Typescript
 - **Database:** SQLite and Prisma  
 
-Project Structure
------------------
-
--   **/frontend:** Contains the React application.
--   **/backend:** Contains the Node.js API built with TypeScript and Prisma.
--   **/database:** SQLite database file and migrations.
--   **docker-compose.yml:** Configuration for the Docker containers.
-
 Contribution
 ------------
 
