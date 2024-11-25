@@ -1,6 +1,17 @@
-//import react from "react";
 import axios from "axios";
 
-export default axios.create({
-  baseURL: `http://localhost:8080/`,
+const api = axios.create({
+  baseURL: "http://localhost:8080",
 });
+
+export const fetchDrivers = async () => {
+  try {
+    const response = await api.get("/drivers");
+    return response.data;
+  } catch (error) {
+    console.error("Erro: ", error);
+    throw error;
+  }
+};
+
+export default api;
