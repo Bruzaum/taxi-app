@@ -29,7 +29,7 @@ Follow the steps below to run the project:
 1. Clone the repository:  
 
    ```bash
-   git clone https://github.com/your-username/ride-request-application.git
+   https://github.com/Bruzaum/taxi-app.git
 
 2. Navigate to the project directory:
 
